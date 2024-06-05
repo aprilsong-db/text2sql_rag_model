@@ -1,8 +1,10 @@
+# Databricks notebook source
 import sys
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, BitsAndBytesConfig
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 import mlflow
 from mlflow.models import infer_signature
+from mlflow.tracking import MlflowClient
 
 
 MODEL_NAME = "defog/sqlcoder-7b-2" # Specify the name of the pre-trained model to be used
@@ -76,6 +78,8 @@ def main():
     signature = infer_signature(input_prompt, prediction)
     
     mlflow.set_registry_uri("databricks-uc")
+    # mlflow.set_experiment("Workspace/Users/april@databricks.com/sqlcoder-7b")
+
     with mlflow.start_run() as run:
 
         mlflow.transformers.log_model(
