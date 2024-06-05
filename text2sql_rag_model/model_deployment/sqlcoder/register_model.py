@@ -20,7 +20,7 @@ MODEL_CONFIG = {
         "pad_token_id": EOS_TOKEN_ID,
         "num_return_sequences":1,
     }
-
+REGISTERED_MODEL_NAME = "asong_dev.llms.sqlcoder_7b"
 QUESTION="Return the maximum and minimum number of cows across all farms."
 EXAMPLE_PROMPT = f"""
 ### Task
@@ -48,7 +48,7 @@ def load_model():
     if available_memory > 15e9:
         # If GPU memory is greater than 15GB, load the model in float16 (bfloat16) for faster processing
         model = AutoModelForCausalLM.from_pretrained(
-            MODEL_NAME,
+            HF_MODEL_NAME,
             trust_remote_code=True,
             torch_dtype=torch.bfloat16,
             use_cache=True,
@@ -80,7 +80,7 @@ def log_and_register_mlflow_model(model):
             artifact_path="model",
             signature=signature,
             input_example=EXAMPLE_PROMPT,
-            registered_model_name="asong_dev.llms.sqlcoder_7b",
+            registered_model_name=REGISTERED_MODEL_NAME,
             metadata={"task": "llm/v1/completions"},
             example_no_conversion=True, #the input example will not be converted to a Pandas DataFrame format when saving the model
         )
