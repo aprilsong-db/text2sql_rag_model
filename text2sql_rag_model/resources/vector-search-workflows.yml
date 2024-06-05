@@ -1,0 +1,50 @@
+# new_cluster: &new_cluster
+#   new_cluster:
+#     num_workers: 3
+#     spark_version: 13.3.x-cpu-ml-scala2.12
+#     node_type_id: i3.xlarge
+#     custom_tags:
+#       clusterSource: mlops-stacks_0.3
+
+common_permissions: &permissions
+  permissions:
+    - level: CAN_VIEW
+      group_name: users
+
+resources:
+  jobs:
+    vector_search_create_endpoint_job:
+      name: vector_search_create_endpoint_job
+      tasks:
+        - task_key: create_vector_search_endpoint
+          notebook_task:
+            notebook_path: ../vector_db/create_vector_search_endpoints.py
+            source: WORKSPACE
+      queue:
+        enabled: true
+
+      schedule:
+        quartz_cron_expression: "0 0 11 * * ?" # daily at 11am
+        timezone_id: UTC
+      <<: *permissions
+      # If you want to turn on notifications for this job, please uncomment the below code,
+      # and provide a list of emails to the on_failure argument.
+      #
+      #  email_notifications:
+      #    on_failure:
+      #      - first@company.com
+      #      - second@company.com
+    vector_search_create_index_job:
+      name: vector_search_create_index_job
+      tasks:
+        - task_key: create_vector_search_index
+          notebook_task:
+            notebook_path: ../vector_db/create_delta_index.py
+            source: WORKSPACE
+      queue:
+        enabled: true
+
+      schedule:
+        quartz_cron_expression: "0 0 11 * * ?" # daily at 11am
+        timezone_id: UTC
+      <<: *permissions

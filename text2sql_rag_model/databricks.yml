@@ -1,0 +1,32 @@
+# The name of the bundle. run `databricks bundle schema` to see the full bundle settings schema.
+bundle:
+  name: text2sql_rag_app
+
+variables:
+  experiment_name:
+    description: Experiment name for the model training.
+    default: /Users/${workspace.current_user.userName}/${bundle.target}-text2sql_rag_app-experiment
+  model_name:
+    description: Model name for the model training.
+    default: text2sqlrag
+
+include:
+  # Resources folder contains ML artifact resources for the ML project that defines model and experiment
+  # And workflows resources for the ML project including model training -> validation -> deployment,
+  # feature engineering,  batch inference, data monitoring, metric refresh, alerts and triggering retraining
+  - ./resources/*.yml
+
+# Deployment Target specific values for workspace
+targets:
+  asong_dev: # UC Catalog Name 
+    workspace:
+      host: https://e2-demo-field-eng.cloud.databricks.com
+
+  asong_prod:
+    workspace:
+      host: https://e2-demo-field-eng.cloud.databricks.com
+
+  asong_staging:
+    workspace:
+      host: https://e2-demo-field-eng.cloud.databricks.com
+

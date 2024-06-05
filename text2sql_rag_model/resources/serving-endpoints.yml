@@ -1,0 +1,15 @@
+# resources:
+#   model_serving_endpoints:
+#     name: "sqlcoder_7b"
+#     config:
+#       - served_entities:
+#           name: "sqlcoder_7b"
+#           entity_name: "asong_dev.llms.sqlcoder_7b"
+#           entity_version: latest_model_version
+#           workload_size: Small
+#           workload_type: GPU_SMALL
+#           scale_to_zero_enabled: true
+# auto_capture_config:
+#   catalog_name: asong_dev
+#   schema_name: llms
+#   table_name_prefix: inference
