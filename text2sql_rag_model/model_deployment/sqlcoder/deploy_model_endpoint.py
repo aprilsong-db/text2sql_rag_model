@@ -1,59 +1,45 @@
 # Databricks notebook source
-
+import sys
+import os
+import requests
+import json
 import mlflow
-from mlflow import MlflowClient
-from utils import get_latest_model_version
-from mlflow.deployments import get_deploy_client
 
-CATALOG = "asong_dev"
-SCHEMA = "llms"
-MODEL_NAME = "sqlcoder_7b"
-UC_MODEL_NAME = f"{CATALOG}.{SCHEMA}.{MODEL_NAME}"
-MODEL_SERVING_ENDPOINT_NAME = f"{MODEL_NAME}_asong"
+sys.path.append(os.path.abspath('..'))
+from text2sql_rag_model.model_deployment.utils import get_latest_model_version, get_max_provisioned_throughput, create_or_update_model_endpoint
+from config import CATALOG, SCHEMA, MODEL_NAME, REGISTERED_MODEL_NAME, ENDPOINT_NAME
 
-latest_model_version = get_latest_model_version(UC_MODEL_NAME)
-DEPLOYMENT_CONFIG = {
-    "served_entities": [
-        {
-            "entity_name": f"{CATALOG}.{SCHEMA}.{MODEL_NAME}",
-            "entity_version": latest_model_version,
-            "workload_size": "Small",
-            "workload_type": "GPU_MEDIUM",
-            "scale_to_zero_enabled": True,
-        }
-    ],
-    "auto_capture_config": {
-        "catalog_name": CATALOG,
-        "schema_name": SCHEMA,
-        "table_name_prefix": f"{MODEL_NAME}",
-    }
-}
-
-def create_or_update_model_endpoint():
-    deploy_client = get_deploy_client("databricks")
-
-    try:
-        endpoint = deploy_client.create_endpoint(
-            name=MODEL_SERVING_ENDPOINT_NAME,
-            config=DEPLOYMENT_CONFIG
-        )
-    except Exception as e:
-        print(f"Endpoint creation failed, attempting update: {e}")
-        endpoint = deploy_client.update_endpoint(
-            endpoint=MODEL_SERVING_ENDPOINT_NAME,
-            config=DEPLOYMENT_CONFIG
-        )
 
 def main():
 
-    client = MlflowClient()
+    client = mlflow.MlflowClient()
     mlflow.set_registry_uri("databricks-uc")
+    latest_model_version = get_latest_model_version(REGISTERED_MODEL_NAME)
+    max_provisioned_throughput = get_max_provisioned_throughput(REGISTERED_MODEL_NAME, latest_model_version)
 
-    create_or_update_model_endpoint()
+    deployment_config = {
+        "served_entities": [
+            {
+                "entity_name": REGISTERED_MODEL_NAME,
+                "entity_version": latest_model_version,
+                "max_provisioned_throughput": max_provisioned_throughput,
+                "scale_to_zero_enabled": True,
+                "workload_size": "Small"
+            }
+        ],
+        "auto_capture_config": {
+            "catalog_name": CATALOG,
+            "schema_name": SCHEMA,
+            "table_name_prefix": ENDPOINT_NAME,
+        }
+    }
+
+    create_or_update_model_endpoint(name=ENDPOINT_NAME, config=deployment_config)
 
 
 if __name__ == "__main__":
     main()
+
 
 # COMMAND ----------
 
